@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: ExN02EventAction.hh,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: ExN02EventAction.hh,v 1.2 2014/01/22 17:27:54 veni Exp $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -37,6 +37,7 @@
 #include "MRodHit.hh"
 #include "TrackerHit.hh"
 #include "TRodHit.hh"
+#include "EVetoHit.hh"
 #include "GFiltHit.hh"
 #include "ExN02DetectorConstruction.hh"
 //#include "Constants.hh";
@@ -62,13 +63,16 @@ class ExN02EventAction : public G4UserEventAction
   void  AddECryHits(ExN02ECalHitsCollection*);
   void  AddMRodHits(MRodHitsCollection*);
   void  AddTRodHits(TRodHitsCollection*);
-  void  AddGFiltHits(GFiltHitsCollection*);
+  void  AddEVetoHits(EVetoHitsCollection*);
   void  AddTrackerHits(TrackerHitsCollection*);
   G4double GetCryPosX(G4int CryNb);
   G4double GetCryPosY(G4int CryNb);
   G4int    GetSeedCell();
+  G4int    GetSeedRing();
   G4double GetEClus(G4int SeedCell);
-  G4double GetETrack();
+  G4double GetETrack(){return 0.};
+  G4double GetETrack(G4int SeedTrack);
+  G4double GetCharge(G4double Energia);
   G4int GetNeig(G4int SeedCell);
   G4int GetNeigPos(G4int SeedCell);
 
@@ -80,21 +84,25 @@ class ExN02EventAction : public G4UserEventAction
    G4double ETotCal;
    G4double EtotTRod; 
    G4double EtotMRod;
-   G4double EtotGFilt;
-   G4double ETotCry[1000];
+   G4double EtotEVeto;
    G4double ProcID;
    G4double ECalHitT,CalEvtT,EtotFiltEvt; 
    G4double ClPosX,ClPosY;
    G4double ClTime,EClus,Theta,ClRadius,Mmiss2,ETotTra;
-   G4int NcellsCl,NClusters;
-   G4double EneCl[10];
-   G4double XCl[10];//For the Ntuple
-   G4double YCl[10];//For the Ntuple
-   G4double ThCl[10];//For the Ntuple
-   G4double MM2[10];//For the Ntuple
-   G4int Used[1000];
-   G4int Empty[1000];
-   G4int Neig[1000];
+   G4int NcellsCl,NClusters,NTracks;
+   G4double EneCl[20];
+   G4double Etrack[20];
+   G4int TrackCh[20];
+   G4double XCl[20];//For the Ntuple
+   G4double YCl[20];//For the Ntuple
+   G4double ThCl[20];//For the Ntuple
+   G4double MM2[20];//For the Ntuple
+   G4double ETotCry[2000]; 
+   G4double ETotRing[1000];
+   G4int Used[2000];
+   G4int UsedRing[2000];	
+   G4int Empty[2000];
+   G4int Neig[2000];
    G4double CalEvtPosX,CalEvtPosY;
 };
 

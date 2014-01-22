@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: PhysicsList.hh,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: PhysicsList.hh,v 1.2 2014/01/22 17:21:10 veni Exp $
 //
 // 
 #ifndef PhysicsList_h
@@ -32,6 +32,10 @@
 
 #include "G4VUserPhysicsList.hh"
 #include "globals.hh"
+#include "G4PhysicalConstants.hh"
+#include "CLHEP/Units/PhysicalConstants.h"
+#include "G4SystemOfUnits.hh"
+
 
 class PhysicsList: public G4VUserPhysicsList
 {

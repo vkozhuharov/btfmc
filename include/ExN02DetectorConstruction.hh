@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: ExN02DetectorConstruction.hh,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: ExN02DetectorConstruction.hh,v 1.2 2014/01/22 17:25:08 veni Exp $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -38,6 +38,8 @@
 #include "ExN02MagneticField.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "G4PhysicalConstants.hh"
+
+
 
 class G4Box;
 class G4Tubs;
@@ -62,7 +64,7 @@ class ExN02DetectorConstruction : public G4VUserDetectorConstruction
   
      G4VPhysicalVolume* Construct();
      
-     const
+  //     const
      //     G4VPhysicalVolume* GetTracker() {return physiTracker;};
      //     G4double GetTrackerFullLength() {return fTrackerLength;};
      //     G4double GetTargetFullLength()  {return fTargetLength;};
@@ -92,12 +94,9 @@ class ExN02DetectorConstruction : public G4VUserDetectorConstruction
      G4VPhysicalVolume* physiTarget;   
 
   // G4SubtractionSolid* solidGSubFilt;   
-     G4VSolid* solidGSubFilt;   
-     G4LogicalVolume*    logicGfilt;   
-     G4VPhysicalVolume*  physiGfilt;   
-
-     G4VSolid*          solidHole;   
-     G4VSolid*          solidGfilt;   
+     G4VSolid*           solidEVeto;   
+     G4LogicalVolume*    logicEVeto;   
+     G4VPhysicalVolume*  physiEVeto;   
  
      G4Box*             solidTXRod;   
      G4LogicalVolume*   logicTXRod;   
@@ -130,6 +129,18 @@ class ExN02DetectorConstruction : public G4VUserDetectorConstruction
      G4Tubs*            solidMagIron;
      G4LogicalVolume*   logicMagIron;
      G4VPhysicalVolume* physiMagIron;
+
+     G4Tubs*            solidMagInnJoke;
+     G4LogicalVolume*   logicMagInnJoke;
+     G4VPhysicalVolume* physiMagInnJoke;
+
+     G4Tubs*            solidMagOutJoke;
+     G4LogicalVolume*   logicMagOutJoke;
+     G4VPhysicalVolume* physiMagOutJoke;
+
+     G4Tubs*            solidMagBArea;
+     G4LogicalVolume*   logicMagBArea;
+     G4VPhysicalVolume* physiMagBArea;
 
      G4Box*             solidSwepMag;  // pointer to the solid Tracker
      G4LogicalVolume*   logicSwepMag;  // pointer to the logical Tracker
