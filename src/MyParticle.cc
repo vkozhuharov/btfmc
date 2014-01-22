@@ -120,12 +120,14 @@ void MyParticle::genDecayVtx(){
   double mean = gamma*tau;
   
   // double path = CLHEP::RandExponential::shoot(mean);
-  double rnd = CLHEP::HepRandom::getTheEngine()->flat();
-  // std::cout << "Random variable: "<< rnd << std::endl;
+  // double path = (G4MTHepRandom::getTheEngine())-> CLHEP::RandExponential::shoot(mean);
+  //double rnd = CLHEP::HepRandom::getTheEngine()->flat();
+  double rnd =(G4MTHepRandom::getTheEngine())->flat();
+  std::cout << "Random variable: "<< rnd << std::endl;
   
   double path = - std::log(1. - rnd) *  mean;
 
-  // std::cout << "Path according to exponential decay: " << b*c*path << " m" <<  std::endl;
+  std::cout << "Path according to exponential decay: " << b*c*path << " m" <<  std::endl;
 
   for (int i=0;i<3;i++) {
     dvtx[i] = beta[i]*c*path  +   pvtx[i] ;
