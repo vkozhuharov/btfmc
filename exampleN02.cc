@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: exampleN02.cc,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: exampleN02.cc,v 1.2 2014/01/22 16:12:54 veni Exp $
 //
 // 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -43,8 +43,15 @@
 #include "G4UImanager.hh"
 //#include "global.hh"
 
+
 #include "MyEvent.hh"
 
+
+
+#ifdef  G4MULTITHREADED
+#include "G4MTHepRandom.hh"
+#else
+#endif
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
@@ -82,19 +89,23 @@ int main(int argc,char** argv)
   // User Verbose output class
   G4VSteppingVerbose* verbosity = new ExN02SteppingVerbose;
   G4VSteppingVerbose::SetInstance(verbosity);
-
+  
   //choose the Random engine
+  //  CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
+  //G4MTHepRandom::setTheEngine(new CLHEP::Ranlux64Engine);  
+#ifdef  G4MULTITHREADED
+  G4MTHepRandom::setTheEngine(new CLHEP::RanecuEngine);
+#else 
   CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-
+#endif
 
   //Get the event storage. Should be instantiated before the HISTO!
   MyEvent *TheEvent = MyEvent::GetInstance(); //
 
 
+
   // set an HistoManager for Root IO
   HistoManager*  histo = new HistoManager();
-  
-  
   // Run manager
   G4RunManager * runManager = new G4RunManager;
   
@@ -115,7 +126,7 @@ int main(int argc,char** argv)
   //
   //  G4UserRunAction* run_action = new ExN02RunAction(histo);
   ExN02RunAction* run_action = new ExN02RunAction(histo);
-  runManager->SetUserAction(run_action);
+  runManager->SetUserAction(run_action); 
   //
   ExN02EventAction* myevent_action = new ExN02EventAction(run_action,histo);
   G4UserEventAction* event_action  = myevent_action;
@@ -177,6 +188,7 @@ int main(int argc,char** argv)
   delete runManager;
   delete verbosity;
   delete histo;
+
   //delete TheEvent;
   return 0;
 }
