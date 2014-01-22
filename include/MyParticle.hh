@@ -6,6 +6,11 @@
 #include "CLHEP/Random/RandExponential.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
+#ifdef  G4MULTITHREADED
+#include "G4MTHepRandom.hh"
+#else
+#endif
+
 #define SQR(x) ((x)*(x))
 //#include <string>
 

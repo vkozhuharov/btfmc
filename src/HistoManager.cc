@@ -25,7 +25,7 @@
 /// \file analysis/AnaEx02/src/HistoManager.cc
 /// \brief Implementation of the HistoManager class
 //
-// $Id: HistoManager.cc,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: HistoManager.cc,v 1.2 2014/01/22 17:15:11 veni Exp $
 // GEANT4 tag $Name:  $
 // 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -40,11 +40,12 @@
 #include "HistoManager.hh"
 #include "G4UnitsTable.hh"
 #include "Constants.hh"
+#include "MyEvent.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HistoManager::HistoManager()
-:rootFile(0),ntupl(0)
+ :rootFile(0),ntupl(0)
 {
   // histograms
   for (G4int k=0; k<MaxHisto; k++){ 
@@ -75,11 +76,11 @@ void HistoManager::book()
     return;
   }
   
-  histo[1] = new TH1D("h1", "EtotCrys ", 1200, 0., 600*CLHEP::MeV);
+  histo[1] = new TH1D("h1", "EtotCrys ", 600, 0., 600*CLHEP::MeV);
   if (!histo[1]) G4cout << "\n can't create histo 1" << G4endl;
-  histo[2] = new TH1D("h2", "EtotTRod ", 200, 0., 50*CLHEP::MeV);
+  histo[2] = new TH1D("h2", "EBeam ", 600, 0., 600*CLHEP::MeV);
   if (!histo[2]) G4cout << "\n can't create histo 2" << G4endl;
-  histo[3] = new TH1D("h3", "EtotTracker", 500, 0., 2*CLHEP::MeV);
+  histo[3] = new TH1D("h3", "EtotTracker", 600, 0., 600.*CLHEP::MeV);
   if (!histo[3]) G4cout << "\n can't create histo 3" << G4endl;
   histo[4] = new TH1D("h4", "Ncells per e- on target E>0.1MeV", 151,-0.5,150.5);
   if (!histo[4]) G4cout << "\n can't create histo 4" << G4endl;  
@@ -103,6 +104,8 @@ void HistoManager::book()
   if (!histo[13]) G4cout << "\n can't create histo 13" << G4endl; 
   histo[14] = new TH1D("h14", "Primary interaction", 5,-0.5,4.5);
   if (!histo[14]) G4cout << "\n can't create histo 14" << G4endl; 
+  histo[15] = new TH1D("h15", "Uboson Z decay",1000.,0.,1.);
+  if (!histo[15]) G4cout << "\n can't create histo 15" << G4endl; 
 
   histo2[1] = new TH2D("h21", "XY cell weigh energy ",ECalNRow,-ECalSizeX*0.5,ECalSizeX*0.5,ECalNCol,-ECalSizeY*0.5,ECalSizeY*0.5);
   if (!histo2[1]) G4cout << "\n can't create histo 11" << G4endl;  
@@ -114,21 +117,15 @@ void HistoManager::book()
   if (!histo2[4]) G4cout << "\n can't create histo 11" << G4endl;
   histo2[5] = new TH2D("h25", "X Y cluster Pos ",ECalNRow*10,-ECalSizeX*0.5,ECalSizeX*0.5,ECalNRow*10,-ECalSizeY*0.5,ECalSizeY*0.5);
   if (!histo2[5]) G4cout << "\n can't create histo 15" << G4endl;
-
   histo2[6] = new TH2D("h26", "Energy vs Theta calo ",275,0.,550.,60,0.,12.);
   if (!histo2[6]) G4cout << "\n can't create histo 16" << G4endl;
-
   histo2[7] = new TH2D("h27", "Energy vs Theta calo >50 MeV ",275,0.,550.,60,0.,12.);
   if (!histo2[7]) G4cout << "\n can't create histo 16" << G4endl;
-
   histo2[8] = new TH2D("h28", "Energy vs Theta Brem",250,50.,550.,60,0.,12.);
   if (!histo2[8]) G4cout << "\n can't create histo 18" << G4endl;
-
   histo2[9] = new TH2D("h29", "Energy vs Theta Annhi ",200,50.,450.,50,0.,10.);
   if (!histo2[9]) G4cout << "\n can't create histo 19" << G4endl;
-//  histo2[10] = new TH2D("h30", "Energy vs Radius ",225,0.,550.,120,-15.,15.);
-//  if (!histo2[10]) G4cout << "\n can't create histo 30" << G4endl;
-
+ 
   //Hystogram of generated variables 30-39
   histo2[30] = new TH2D("h30", "Energy vs Theta Gen ",275,0.,550.,60,0.,12.);
   if (!histo2[30]) G4cout << "\n can't create histo 30" << G4endl;
@@ -136,38 +133,42 @@ void HistoManager::book()
   if (!histo2[31]) G4cout << "\n can't create histo 31" << G4endl;
   histo2[32] = new TH2D("h32", "Energy vs Theta Gen Anni",275,0.,550.,60,0.,12.);
   if (!histo2[32]) G4cout << "\n can't create histo 32" << G4endl;
-
   histo2[33] = new TH2D("h33", "Energy vs Theta Gen in Acc",275,0.,550.,60,0.,12.);
   if (!histo2[33]) G4cout << "\n can't create histo 33" << G4endl;
   histo2[34] = new TH2D("h34", "Energy vs Theta Gen Brem in Acc ",275,0.,550.,60,0.,12.);
   if (!histo2[34]) G4cout << "\n can't create histo 31" << G4endl;
   histo2[35] = new TH2D("h35", "Energy vs Theta Gen Anni in Acc",275,0.,550.,60,0.,12.);
   if (!histo2[35]) G4cout << "\n can't create histo 32" << G4endl;
+  histo2[36] = new TH2D("h36", "Beam X Y ",200,-5.,5.,200,-5.,5.);
+  if (!histo2[36]) G4cout << "\n can't create histo 36" << G4endl;
 
   // create 1 ntuple in subdirectory "tuples"
   //
   ntupl = new TTree("U101", "Envent");
   ntupl->Branch("Nevent", &(myEvt.NTNevent), "Nevent/I");
   ntupl->Branch("ETot", &(myEvt.NTEtot), "ETot/D");
-  ntupl->Branch("ETracker",  &(myEvt.NTETracker), "ETracker/D");
+  ntupl->Branch("PBeam", &(myEvt.NTPBeam), "PBeam/D");
+  ntupl->Branch("XBeam", &(myEvt.NTXBeam), "XBeam/D");
+  ntupl->Branch("YBeam", &(myEvt.NTYBeam), "YBeam/D");
+  ntupl->Branch("ETracker",  &(myEvt.NTETracker), "ETracker[20]/D");
   ntupl->Branch("NClusters", &(myEvt.NTNCluster), "NClusters/I");
-  ntupl->Branch("ECluster", (myEvt.NTECluster), "ECluster[10]/D"); 
-  ntupl->Branch("XCluster", (myEvt.NTXCluster), "XCluster[10]/D");
-  ntupl->Branch("YCluster", (myEvt.NTYCluster), "YCluster[10]/D");
-  ntupl->Branch("Theta", (myEvt.NTTheta), "Theta[10]/D");
-  ntupl->Branch("Mmiss2", (myEvt.NTMmiss2), "MMiss2[10]/D");
+  ntupl->Branch("NTracks",   &(myEvt.NTNTracks), "NTracks/I");
+  ntupl->Branch("ECluster", (myEvt.NTECluster), "ECluster[20]/D"); 
+  ntupl->Branch("XCluster", (myEvt.NTXCluster), "XCluster[20]/D");
+  ntupl->Branch("YCluster", (myEvt.NTYCluster), "YCluster[20]/D");
+  ntupl->Branch("Theta", (myEvt.NTTheta), "Theta[20]/D");
+  ntupl->Branch("Mmiss2", (myEvt.NTMmiss2), "MMiss2[20]/D");
   ntupl->Branch("ECell", (myEvt.NTECell), "ECell[1000]/D");
-  ntupl->Branch("IDProc", &(myEvt.IDProc), "IDProc/D");
+  ntupl->Branch("IDProc", &(myEvt.NTIDProc), "IDProc/D");
   //  ntupl->Branch("EPrim", (&myEvt.PrimE), "EPrim/D");
 
   
-  //MySimEvent *mySim = (MyEvent::GetInstance())->getSimEvent();
+  MySimEvent *mySim = (MyEvent::GetInstance())->GetSimEvent();
 
 
   ntGen = new TTree("genEvt", "genEvent");
   //ntGen->Branch("NPrimaries","");
-  
-  
+
   ntSim = new TTree("sinEvt", "simEvent");
   
 
@@ -238,10 +239,10 @@ void HistoManager::PrintStatistic()
     
     G4cout<<" ECry : mean = " << G4BestUnit(histo[1]->GetMean(), "Energy") 
       << " rms = " << G4BestUnit(histo[1]->GetRMS(),  "Energy") << G4endl;
-    G4cout<< " ETRod : mean = " << G4BestUnit(histo[2]->GetMean(), "Energy") 
+    G4cout<< " EBeam : mean = " << G4BestUnit(histo[2]->GetMean(), "Energy") 
       << " rms = " << G4BestUnit(histo[2]->GetRMS(),  "Energy") << G4endl;
     G4cout 
-      << " EMRod : mean = " << G4BestUnit(histo[3]->GetMean(), "Energy") 
+      << " ETracker : mean = " << G4BestUnit(histo[3]->GetMean(), "Energy") 
       << " rms = " << G4BestUnit(histo[3]->GetRMS(),  "Energy") << G4endl;
     //    G4cout 
     //    << " LGap : mean = " << G4BestUnit(histo[4]->GetMean(), "Length") 

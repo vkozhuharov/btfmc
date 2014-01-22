@@ -26,7 +26,7 @@
 /// \file analysis/AnaEx02/include/HistoManager.hh
 /// \brief Definition of the HistoManager class
 //
-// $Id: HistoManager.hh,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: HistoManager.hh,v 1.2 2014/01/22 17:15:13 veni Exp $
 // GEANT4 tag $Name:  $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -36,24 +36,30 @@
 #define HistoManager_h 1
 
 #include "globals.hh"
-
+       	       	       
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 struct NTEvent{
   int NTNevent;
   int NTNCluster;
+  int NTNTracks;	
   double NTEtot;
+  double NTPBeam;
   int NTNtotCell;
-  int IDProc;
-  double NTETracker;
+  double NTIDProc;
+  double NTXBeam;
+  double NTYBeam;
+
   double PrimE;
 
-  double NTECluster[10];
-  double NTXCluster[10];
-  double NTYCluster[10];
-  double NTTheta[10];
-  double NTMmiss2[10];
+  double NTETracker[20];
+  double NTECluster[20];
+  double NTXCluster[20];
+  double NTYCluster[20];
+  double NTTheta[20];
+  double NTMmiss2[20];
   double NTECell[1000];
+
   
   //The generated event variables:
 
@@ -61,6 +67,7 @@ struct NTEvent{
 
   //Simulated event variables
   
+
 
 
 };
@@ -92,8 +99,10 @@ class HistoManager
     
     void PrintStatistic();
 
-  void FillGenEvent();
-  void FillSimEvent();
+  void FillGenEvent(){};
+  void FillSimEvent(){};
+
+
 
   public:
     NTEvent  myEvt;    
@@ -106,7 +115,6 @@ class HistoManager
 
   TTree* ntSim;
   TTree* ntGen;
-
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

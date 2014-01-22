@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: PhysicsList.cc,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: PhysicsList.cc,v 1.2 2014/01/22 17:16:50 veni Exp $
 //
 // 
 
@@ -43,9 +43,9 @@
 
 #include "G4FastSimulationManagerProcess.hh"
 
-
 PhysicsList::PhysicsList():  G4VUserPhysicsList()
 {
+  defaultCutValue = 0.1*cm;
   SetVerboseLevel(1);
 }
 
@@ -141,6 +141,7 @@ void PhysicsList::AddTransportation()
 #include "G4MuBremsstrahlung.hh"
 #include "G4MuPairProduction.hh"
 #include "G4SynchrotronRadiation.hh"
+#include "Constants.hh"
 
 #include "G4hIonisation.hh"
 void PhysicsList::ConstructEM()
@@ -192,7 +193,7 @@ void PhysicsList::ConstructEM()
       pmanager->AddProcess(theeplusIonisation);
       pmanager->AddProcess(theeplusBremsstrahlung);
       pmanager->AddProcess(theeplusAnnihilation);
-      pmanager->AddProcess(theeplusSincrotron);
+      if(IsSincrotronON) pmanager->AddProcess(theeplusSincrotron);
       // set ordering for AtRestDoIt
       pmanager->SetProcessOrderingToFirst(theeplusAnnihilation, idxAtRest);
       // set ordering for AlongStepDoIt
@@ -203,7 +204,7 @@ void PhysicsList::ConstructEM()
       pmanager->SetProcessOrdering(theeplusIonisation, idxPostStep, 2);
       pmanager->SetProcessOrdering(theeplusBremsstrahlung, idxPostStep, 3);
       pmanager->SetProcessOrdering(theeplusAnnihilation, idxPostStep, 4);
-      pmanager->SetProcessOrdering(theeplusSincrotron, idxPostStep, 5);
+      if(IsSincrotronON) pmanager->SetProcessOrdering(theeplusSincrotron, idxPostStep, 5);
   
     } else if( particleName == "mu+" || 
                particleName == "mu-"    ) {
