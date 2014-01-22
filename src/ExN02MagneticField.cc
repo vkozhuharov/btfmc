@@ -27,7 +27,7 @@
 /// \brief Implementation of the F03FieldSetup class
 //
 //
-// $Id: ExN02MagneticField.cc,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: ExN02MagneticField.cc,v 1.2 2014/01/22 16:37:06 veni Exp $
 //
 //  
 //   Field Setup class implementation.
@@ -69,7 +69,7 @@ F03FieldSetup::F03FieldSetup()
                                        0.0,              // 0.5*tesla,
                                        0.0       ));
   fLocalMagneticField = new G4UniformMagField(
-					    G4ThreeVector(MagneticField*tesla,    //1.2 BTF Magnet
+					    G4ThreeVector(-MagneticField*tesla,    //1.2 BTF Magnet
                                             0.0,                        // 0.5*tesla,
                                             0.0  ));
 

@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: ExN02RunAction.cc,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: ExN02RunAction.cc,v 1.2 2014/01/22 16:39:52 veni Exp $
 // 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -44,6 +44,13 @@
 
 #include "HistoManager.hh"
 #include "Constants.hh"
+
+#ifdef  G4MULTITHREADED
+#include "G4MTHepRandom.hh"
+#else
+#endif
+
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 G4Run* ExN02RunAction::GenerateRun()
@@ -81,8 +88,14 @@ void ExN02RunAction::BeginOfRunAction(const G4Run* aRun)
     time_t systime = time(NULL);
     seeds[0] = (long) systime;
     seeds[1] = (long) (systime*G4UniformRand());
+
+#ifdef  G4MULTITHREADED
+    G4MTHepRandom::setTheSeeds(seeds);
+    G4MTHepRandom::showEngineStatus();
+#else
     CLHEP::HepRandom::setTheSeeds(seeds);
     CLHEP::HepRandom::showEngineStatus();
+#endif
   } 
 }
 
