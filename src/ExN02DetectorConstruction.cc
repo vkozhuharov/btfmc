@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: ExN02DetectorConstruction.cc,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: ExN02DetectorConstruction.cc,v 1.2 2014/01/22 16:24:57 veni Exp $
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //#include "InputParam.input"
@@ -36,8 +36,9 @@
 #include "TRodSD.hh"
 #include "MRodSD.hh"
 #include "TrackerSD.hh"
+#include "EVetoSD.hh"
 #include "GFiltSD.hh"
- 
+
 #include "G4Material.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
@@ -47,6 +48,7 @@
 #include "G4SDManager.hh"
 #include "G4GeometryTolerance.hh"
 #include "G4GeometryManager.hh"
+#include "G4RotationMatrix.hh"
 
 #include "G4UserLimits.hh"
 #include "G4NistManager.hh"
@@ -113,10 +115,11 @@ G4VPhysicalVolume* ExN02DetectorConstruction::Construct()
   G4Material* W      = man->FindOrBuildMaterial("G4_W");
   G4Material* Concrete = man->FindOrBuildMaterial("G4_CONCRETE");
   G4Material* Iron     = man->FindOrBuildMaterial("G4_Fe");
-
+  G4Material* Scint     = man->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
   // Print all the materials defined.
   //  G4cout << G4endl << "The materials defined are : " << G4endl << G4endl;
   //  G4cout << *(G4Material::GetMaterialTable()) << G4endl;
+  G4bool allLocal=true;
   
   //------------------------------ 
   // World Volume
@@ -150,26 +153,98 @@ G4VPhysicalVolume* ExN02DetectorConstruction::Construct()
 				  false);         // is overlap    
   }
 
-//  if(IsMagIronON==1){ 
-//    G4double innerRad = 131.8*cm;
-//    G4double outerRad = 204.6*cm;
-//    G4double hz       = 60.*cm;
-//    G4double startAngle = 0.*deg;
-//    G4double spanningAngle = 45.*deg;
-//
-//    G4ThreeVector positionMagIron = G4ThreeVector(MagIronX*cm,MagIronY*cm,MagIronZ*cm); 
-//
-//    solidMagIron = new G4Tubs("magIron",innerRad,outerRad,hz,startAngle,spanningAngle);
-//    logicMagIron = new G4LogicalVolume(solidMagIron,Iron, "MagIron", 0, 0, 0);
-//    physiMagIron = new G4PVPlacement(0,              // no rotation
-//				     positionMagIron,   // at (0,0,0)
-//				     logicMagIron,      // its logical volume
-//				     "MagIron",         // its name
-//				     logicWorld,        // its mother  volume
-//				     false,             // no boolean operations
-//				     0);                // copy number
-//  }
+  if(IsMagIronON==1){ 
+    G4double innerRad = 131.8*cm;
+    G4double outerRad = 204.6*cm;
+    G4double hz       = 20.*cm;
+    G4double startAngle = 46.*deg;
+    G4double spanningAngle = 44.*deg;
+    
+    //Start rotating the iron plates
+    G4RotationMatrix* yRot=new G4RotationMatrix; // Rotates X and Z axes only
+    yRot->rotateY(M_PI/2.*rad);  // Rotates 90 degrees
+    G4ThreeVector zTrans(0.,0.,0.);    
 
+    solidMagIron = new G4Tubs("magIron",innerRad,outerRad,hz,startAngle,spanningAngle);
+    logicMagIron = new G4LogicalVolume(solidMagIron,Iron, "MagIron", 0, 0, 0);
+
+    for(int kk=0;kk<2;kk++){
+      float sign;
+      if(kk==0) sign=1.;
+      if(kk==1) sign=-1.;
+      G4ThreeVector positionMagIron = G4ThreeVector(MagIronX*cm+sign*40*cm,MagIronY*cm-(innerRad+(outerRad-innerRad)/2.),MagIronZ*cm); 
+      physiMagIron = new G4PVPlacement(yRot,              // no rotation
+				       positionMagIron,   // at (0,0,0)
+				       logicMagIron,      // its logical volume
+				       "MagIron",         // its name
+				       logicWorld,        // its mother  volume
+				       false,             // no boolean operations
+				       0,                 // copy number
+				       true);            //Check for overlaps
+    }
+
+    solidMagInnJoke = new G4Tubs("magInnJoke",innerRad,innerRad+19.5*cm,hz,startAngle,spanningAngle);
+    logicMagInnJoke = new G4LogicalVolume(solidMagInnJoke,Iron, "MagIronJoke", 0, 0, 0);
+
+    solidMagOutJoke = new G4Tubs("magOutJoke",outerRad-19.5*cm,outerRad,hz,startAngle+24*deg,spanningAngle-24*deg);
+    logicMagOutJoke = new G4LogicalVolume(solidMagOutJoke,Iron, "MagIronJoke", 0, 0, 0);
+
+    solidMagBArea = new G4Tubs("magBArea",innerRad+23.5*cm,outerRad-23.5*cm,hz,startAngle,spanningAngle);
+    logicMagBArea = new G4LogicalVolume(solidMagBArea,Vacuum,"MagBArea", 0, 0, 0);
+    logicMagBArea ->SetFieldManager(fEmFieldSetup->GetLocalFieldManager(),allLocal);
+
+    G4ThreeVector positionMagInnJoke = G4ThreeVector(MagIronX*cm,MagIronY*cm-(innerRad+(outerRad-innerRad)/2.),MagIronZ*cm); 
+    G4ThreeVector positionMagOutJoke = G4ThreeVector(MagIronX*cm,MagIronY*cm-(innerRad+(outerRad-innerRad)/2.),MagIronZ*cm); 
+    G4ThreeVector positionMagBArea   = G4ThreeVector(MagIronX*cm,MagIronY*cm-(innerRad+(outerRad-innerRad)/2.),MagIronZ*cm); 
+    
+    physiMagInnJoke = new G4PVPlacement(yRot,                 // no rotation
+					positionMagInnJoke,   // at (0,0,0)
+					logicMagInnJoke,      // its logical volume
+					"InnJoke",            // its name
+					logicWorld,          // its mother  volume
+					false,               // no boolean operations
+					0,                   // copy number
+					true);               //Check for overlaps
+    physiMagOutJoke = new G4PVPlacement(yRot,                 // no rotation
+					positionMagOutJoke,   // at (0,0,0)
+					logicMagOutJoke,      // its logical volume
+					"OutJoke",            // its name
+					logicWorld,          // its mother  volume
+					false,               // no boolean operations
+					0,                   // copy number
+					true);               //Check for overlaps
+
+    physiMagBArea  = new G4PVPlacement(yRot,                 // no rotation
+				       positionMagBArea,   // at (0,0,0)
+				       logicMagBArea,      // its logical volume
+				       "BArea",            // its name
+				       logicWorld,          // its mother  volume
+				       false,               // no boolean operations
+				       0,                   // copy number
+				       true);               //Check for overlaps
+  } 
+
+  if(IsDipoleON==1){
+    //------------------------------ 
+    // Magnet
+    //------------------------------
+    G4ThreeVector positionSwepMag = G4ThreeVector(MagnetPosiX*cm,MagnetPosiY*cm,MagnetPosiZ*cm); 
+    G4double SwepMagDx=  MagnetSizeX *cm;
+    G4double SwepMagDy=  MagnetSizeY *cm;
+    G4double SwepMagDz=  MagnetSizeZ *cm;
+    solidSwepMag = new G4Box("swepMag",SwepMagDx*0.5,SwepMagDy*0.5,SwepMagDz*0.5);
+    logicSwepMag = new G4LogicalVolume(solidSwepMag,WorldMater,"SwepMag",0,0,0);
+    logicSwepMag ->SetFieldManager(fEmFieldSetup->GetLocalFieldManager(),allLocal);
+    physiSwepMag = new G4PVPlacement(0,             // no rotation
+				     positionSwepMag,  // at (x,y,z)
+				     logicSwepMag,     // its logical volume                                 
+				     "SwepMag",           // its name
+				     logicWorld,       // its mother  volume
+				     false,            // no boolean operations
+				     0,                // copy number 
+				     false);           // Overlap check    
+  }
+  
  if(IsTargetON==1){
   //------------------------------------------------- 
   // Target Defintion two layers of fused silica rods 
@@ -308,10 +383,10 @@ G4VPhysicalVolume* ExN02DetectorConstruction::Construct()
    G4double ECryLength = ECalLength;
    G4double ECryX      = ECalX/ECalNRow;
    G4double ECryY      = ECalY/ECalNCol;
-   
+   G4int NCry=0;
    solidCry  = new G4Box("Ecry",ECryX*0.5,ECryY*0.5,ECryLength*0.5);
    logicCry  = new G4LogicalVolume(solidCry,LSO,"ECry",0, 0, 0);
-   
+
    G4int ncry=0;
    for (G4int i=0;i<ECalNRow;i++){
      for (G4int j=0;j<ECalNCol;j++){
@@ -321,7 +396,8 @@ G4VPhysicalVolume* ExN02DetectorConstruction::Construct()
        G4int HoleFlag=0; //should be parametric in NRow NCol
        
        //       if( fabs(PosXCry)<ECalInnHole*cm && fabs(PosYCry)<ECalInnHole*cm ){
-       if( (sqrt( PosXCry*PosXCry + PosYCry*PosYCry ) <ECalInnHole*cm ) || (sqrt( PosXCry*PosXCry + PosYCry*PosYCry ) > ECalSizeX*cm/2.) ){
+       //Inner radius ECalInnHole outer radius ECalSizeX
+       if( (sqrt( PosXCry*PosXCry + PosYCry*PosYCry ) <ECalInnHole*cm ) || (sqrt( PosXCry*PosXCry + PosYCry*PosYCry ) > ECalSizeX*cm/2.) ){ 
 	 HoleFlag=1;
        }else{
 	 HoleFlag=0;
@@ -338,28 +414,28 @@ G4VPhysicalVolume* ExN02DetectorConstruction::Construct()
 				       i+j*ECalNCol,     // copy number 
 				       false);          //Check for overlaps
 	 ncry ++;
+	 NCry++;
        }
      }
    }//end of crystal placements 
    G4cout << "Total number of LYSO crystals:  " << ncry << G4endl;
+   G4cout<<"placed "<<NCry<<" cristals "<<G4endl;
  }
-
-
  //------------------------------ 
  // low Energy gamma filter linked to Calo position
  //------------------------------  
- if(IsFilterON==1){
-   G4ThreeVector positionGfilt = G4ThreeVector(GFiltPosiX*cm,GFiltPosiY*cm,GFiltPosiZ*cm); 
-    
-    solidHole  = new G4Box("hole", GFiltHoleSizeX*cm*0.5,GFiltHoleSizeY*cm*0.5,GFiltHoleSizeZ*cm*0.5);
-    solidGfilt = new G4Box("gfilt",GFiltSizeX*cm*0.5,GFiltSizeY*cm*0.5,GFiltSizeZ*cm*0.5);
-    solidGSubFilt = new G4SubtractionSolid("GSubFilt",solidGfilt,solidHole,0,G4ThreeVector(0,0,GFiltSizeZ*cm/2.));
-    
-    logicGfilt = new G4LogicalVolume(solidGSubFilt,Pb,"GSubFilt-H",0,0,0);
-    physiGfilt = new G4PVPlacement(0,             // no rotation
-				   positionGfilt,  // at (x,y,z)
-				   logicGfilt,     // its logical volume    
-				   "GFilt-Hole",   // its name
+ if(IsEVetoON==1){
+    G4RotationMatrix* xRot=new G4RotationMatrix; // Rotates X and Z axes only
+    xRot->rotateX(-M_PI/4.*rad);  // Rotates 90 degrees
+
+
+   G4ThreeVector positionEVeto = G4ThreeVector(EVetoPosiX*cm,EVetoPosiY*cm,EVetoPosiZ*cm);  
+    solidEVeto = new G4Box("eveto",EVetoSizeX*cm*0.5,EVetoSizeY*cm*0.5,EVetoSizeZ*cm*0.5);
+    logicEVeto = new G4LogicalVolume(solidEVeto,Scint,"EVeto",0,0,0);
+    physiEVeto = new G4PVPlacement(xRot,             // no rotation
+				   positionEVeto,  // at (x,y,z)
+				   logicEVeto,     // its logical volume    
+				   "EVeto",   // its name
 				   logicWorld,     // its mother volume
 				   false,          // no boolean operations
 				   0,
@@ -367,25 +443,6 @@ G4VPhysicalVolume* ExN02DetectorConstruction::Construct()
   }
   //  for(int i=0;i<100;i++) G4cout<<"i "<<i<<" PosX "<<GetCryPosX(i)<<" PosY "<<GetCryPosY(i)<<" PosZ 0 "<<GetCryPosZ(i)<<G4endl;
   
-  //------------------------------ 
-  // Magnet
-  //------------------------------
-  G4ThreeVector positionSwepMag = G4ThreeVector(MagnetPosiX*cm,MagnetPosiY*cm,MagnetPosiZ*cm); 
-  G4double SwepMagDx=  MagnetSizeX *cm;
-  G4double SwepMagDy=  MagnetSizeY *cm;
-  G4double SwepMagDz=  MagnetSizeZ *cm;
-  G4bool allLocal=true;
-  solidSwepMag = new G4Box("swepMag",SwepMagDx*0.5,SwepMagDy*0.5,SwepMagDz*0.5);
-  logicSwepMag = new G4LogicalVolume(solidSwepMag,WorldMater,"SwepMag",0,0,0);
-  logicSwepMag ->SetFieldManager(fEmFieldSetup->GetLocalFieldManager(),allLocal);
-  physiSwepMag = new G4PVPlacement(0,             // no rotation
-				   positionSwepMag,  // at (x,y,z)
-				   logicSwepMag,     // its logical volume                                  
-				   "SwepMag",           // its name
-				   logicWorld,       // its mother  volume
-				   false,            // no boolean operations
-				   0,                // copy number 
-				   false);           // Overlap check    
 
   //------------------------------------------------- 
   // Spectrometer chambers
@@ -414,8 +471,9 @@ G4VPhysicalVolume* ExN02DetectorConstruction::Construct()
   G4String TrackerSDname = "TraSD";
   G4String TRodSDname    = "TRodSD";     //target rods
   G4String MRodSDname    = "MRodSD";     //monitor rods
+  G4String EVetoSDname   = "EVetoSD";   //Gamma filter
   G4String GFiltSDname   = "GFiltSD";   //Gamma filter
-  
+
   if(IsEcalON==1){
     ExN02ECalSD* ECrySD = new ExN02ECalSD( ECrySDname );
     logicCry->SetSensitiveDetector( ECrySD );
@@ -434,10 +492,10 @@ G4VPhysicalVolume* ExN02DetectorConstruction::Construct()
     logicMXRod->SetSensitiveDetector( MRodSDet );
     logicMYRod->SetSensitiveDetector( MRodSDet );
   }
-  if(IsFilterON==1){
-    GFiltSD* GFiltSDet = new GFiltSD( GFiltSDname );
-    SDman->AddNewDetector( GFiltSDet );
-    logicGfilt->SetSensitiveDetector( GFiltSDet );
+  if(IsEVetoON==1){
+    EVetoSD* EVetoSDet = new EVetoSD( EVetoSDname );
+    SDman->AddNewDetector( EVetoSDet );
+    logicEVeto->SetSensitiveDetector( EVetoSDet );
   }
   //  logicTXRod->SetSensitiveDetector( TRodSDet );
   //  logicTYRod->SetSensitiveDetector( TRodSDet );
@@ -446,10 +504,11 @@ G4VPhysicalVolume* ExN02DetectorConstruction::Construct()
 //--------- Visualization attributes -------------------------------
 
   logicWorld  ->SetVisAttributes(G4VisAttributes::Invisible);
-  //  if(IsTargetON)  logicTarget ->SetVisAttributes(G4VisAttributes::Invisible);
+  // if(IsTargetON)  logicTarget ->SetVisAttributes(G4VisAttributes::Invisible);
   //  if(IsMonitorON) logicMonitor->SetVisAttributes(G4VisAttributes::Invisible);
   if(IsEcalON)    logicEcal   ->SetVisAttributes(G4VisAttributes::Invisible);
-  // logicSwepMag   ->SetVisAttributes(G4VisAttributes::Invisible);
+  //  logicSwepMag   ->SetVisAttributes(G4VisAttributes::Invisible);
+  //  logicTracker   ->SetVisAttributes(G4VisAttributes::Invisible);
   //  if(IsEcalON)    logicCry    ->SetVisAttributes(G4VisAttributes::Invisible);
   //  logicCry    ->SetVisAttributes(G4VisAttributes::Invisible);
   //  logicGFilt   ->SetVisAttributes(G4VisAttributes::Invisible);
@@ -458,7 +517,7 @@ G4VPhysicalVolume* ExN02DetectorConstruction::Construct()
   //  logicTYRod  ->SetVisAttributes(G4VisAttributes::Invisible);
 
   G4VisAttributes* BoxVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,1.0));
-  logicWorld  ->SetVisAttributes(BoxVisAtt);  
+  //  logicWorld  ->SetVisAttributes(BoxVisAtt);  
   //  logicTarget ->SetVisAttributes(BoxVisAtt);
 
   return physiWorld;  
@@ -479,7 +538,7 @@ void ExN02DetectorConstruction::SetupDetectors()
 //  epFilter->add(particleName="e+");
 //
 //  G4MultiFunctionalDetector* det = new G4MultiFunctionalDetector("SDcalo");
-//  G4VPrimitiveScorer* primitive;
+//  G4VPrimitiveScorer* primitive;r
 //  primitive = new G4PSEnergyDeposit("eDep",0);
 //  det->RegisterPrimitive(primitive);
 //  primitive = new G4PSNofSecondary("nGamma",0);
