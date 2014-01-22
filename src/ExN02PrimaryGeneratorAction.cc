@@ -24,8 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: ExN02PrimaryGeneratorAction.cc,v 1.1 2014/01/22 15:35:03 veni Exp $
-//
+// $Id: ExN02PrimaryGeneratorAction.cc,v 1.2 2014/01/22 16:56:13 veni Exp $
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -42,14 +41,13 @@
 #include "Constants.hh"
 #include "MyEvent.hh"
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 ExN02PrimaryGeneratorAction::ExN02PrimaryGeneratorAction(
                                                ExN02DetectorConstruction* myDC)
 :myDetector(myDC)
 {
-  G4cout << "ExN02PrimaryGeneratorAction: Constructing the generator action" << G4endl;
-
   G4int n_particle = 1;
   particleGun = new G4ParticleGun(n_particle);
 
@@ -59,8 +57,8 @@ ExN02PrimaryGeneratorAction::ExN02PrimaryGeneratorAction(
   evt->SetBeamEnergy(BeamEnergy*MeV);
 
 
-  // default particle
-  
+  // default particle  
+
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
   G4ParticleDefinition* particle = particleTable->FindParticle("e+");
   
@@ -81,21 +79,19 @@ ExN02PrimaryGeneratorAction::~ExN02PrimaryGeneratorAction()
 void ExN02PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 { 
   std::cout << "============================ Generate Primaries" << std::endl;
-
   evt->ClearEvent();
-
   
   static int nev;
   nev++;
   
-  //if(nev%10000 == 0) 
+  if(nev%10000 == 0) 
     std::cout << "Generating event numner " << nev << std::endl;
   
   G4double position = -0.5*(myDetector->GetWorldFullLength());
   position = -1.*m;
   particleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,position));  
   
-  static G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();    
+  static G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();   
   static G4ParticleDefinition* particle ;
   
   double xf = G4UniformRand();
@@ -104,6 +100,7 @@ void ExN02PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   if(IsCalibRun==1){
     std::cout << "==== Generating calibration event === " << std::endl;
+
 
     G4double ECalX      = ECalSizeX*cm;
     G4double ECalY      = ECalSizeY*cm;
@@ -120,7 +117,7 @@ void ExN02PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     if( fabs(PosXCry)<ECalInnHole*cm && fabs(PosYCry)<ECalInnHole*cm ){
       HoleFlag=1;  //means is in the hole 
     }else{
-      HoleFlag==0;
+      HoleFlag=0;
     }	
     if(HoleFlag==0){
       G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
@@ -129,7 +126,7 @@ void ExN02PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       particleGun->SetNumberOfParticles(NPrimaries);  
       particleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,0.*cm)); 
       particleGun->SetParticleMomentumDirection(positionCry.unit()); //with Y=0 goes to the Gap!!!
-      
+
       //Fill all the information about the primaries before generating the event:
       MyParticle part(particleGun->GetParticleDefinition ()->GetPDGMass ());
       part.setType(particleGun->GetParticleDefinition ()->GetParticleName ()); 
@@ -149,10 +146,14 @@ void ExN02PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     }
   } else {
     std::cout << "==== Generating general event === " << std::endl;
-    if(xf > 1.) {
-      //	    1E-14) {
+    if(xf>1E-14) {
       G4double position = -0.5*(myDetector->GetWorldFullLength());
       particleGun->SetNumberOfParticles(NPrimaries);  
+      //for  energy resolution use
+      //    G4ParticleDefinition* particle = particleTable->FindParticle("gamma");
+      //   particleGun->SetParticleDefinition(particle);
+      //  G4ThreeVector positionCry = G4ThreeVector(5.5*cm,5.5*cm,200.*cm);
+      // particleGun->SetParticleMomentumDirection(positionCry.unit()); //with Y=0 goes to the Gap!!!
       position = -1.*m;
       
       if(BeamSpot==0){
@@ -160,9 +161,17 @@ void ExN02PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       }else{
 	G4double StartX = G4RandGauss::shoot(0.,SigmaBeamX);
 	G4double StartY = G4RandGauss::shoot(0.,SigmaBeamY);
-	particleGun->SetParticlePosition(G4ThreeVector(StartX*cm,StartY*cm,position)); 
+	//      G4cout<<"Sigma "<<SigmaBeamX<<" Startx "<<StartX << G4endl;
+	// particleGun->SetParticlePosition(G4ThreeVector(StartX*cm,StartY*cm,position)); 
+	particleGun->SetParticlePosition(G4ThreeVector(StartX,StartY,position)); 
 	//      G4cout<< "XY of beam " <<StartX<<" StartY "<<StartY<<G4endl;
       }
+      
+      if(BeamESpread==1){
+	G4double NewBeamEnergy = G4RandGauss::shoot(BeamEnergy,SigmaBeamE);
+	particleGun->SetParticleEnergy(NewBeamEnergy*MeV);
+      }
+      
       //    particleGun->SetParticleMomentumDirection(G4ThreeVector(0.026,0.03,0.95).unit()); //with Y=0 goes to the Gap!!!
       
       MyParticle part(particleGun->GetParticleDefinition ()->GetPDGMass ());
@@ -173,17 +182,29 @@ void ExN02PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       part.setPVtx(particleGun->GetParticlePosition ().x(),particleGun->GetParticlePosition ().y(),particleGun->GetParticlePosition ().z());
       evt->AddProduct(part);
       
-      
       particleGun->GeneratePrimaryVertex(anEvent);
-      
-      
     } else {  //U Boson MC 
+      G4double NewBeamEnergy = BeamEnergy;
+      if(BeamESpread==1){
+	NewBeamEnergy = G4RandGauss::shoot(BeamEnergy,SigmaBeamE);
+	//particleGun->SetParticleEnergy(NewBeamEnergy*MeV);
+      }
+      evt->SetBeamEnergy(NewBeamEnergy);
       evt->GenerateEvent();
+      
+      G4double StartX=0;
+      G4double StartY=0;
+      
+      if(BeamSpot==1){
+	StartX= G4RandGauss::shoot(0.,SigmaBeamX);
+	StartY= G4RandGauss::shoot(0.,SigmaBeamY);
+      }
+      
       //Loop over the final state particles and trace them through the detector
       std::vector<MyParticle>* particles = evt->getParticles();
       std::vector<MyParticle>::iterator it;
       
-      std::cout << "Number of primaries :" << particles->size() << std::endl;
+      //    std::cout << "Number of primaries :" << particles->size() << std::endl;
       
       it = particles->begin();
       while (it != particles->end()) {
@@ -200,14 +221,16 @@ void ExN02PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 	  particleGun->SetParticleMomentumDirection(G4ThreeVector(p[1],p[2],p[3]).unit());
 	  //      G4double position = -0.5*(myDetector->GetWorldFullLength());
 	  
-	  
 	  G4double  position = -0.*m; //center of the target for the moment
+	  //	particleGun->SetParticlePosition(G4ThreeVector(0.*cm,0.*cm,0.*cm));
 	  
 	  std::cout << "Particle " << it->getType() << "  Production vertex: " 
 		    << pvtx[0] << "\t" << pvtx[1] << "\t" << pvtx[2] << "\t" 
 		    << std::endl;
-	  particleGun->SetParticlePosition(G4ThreeVector(pvtx[0]*m,pvtx[1]*m,pvtx[2]*m ));
+	  particleGun->SetParticlePosition(G4ThreeVector(pvtx[0]*m+StartX,pvtx[1]*m+StartY,pvtx[2]*m ));
+	  //add the randoms
 	  particleGun->GeneratePrimaryVertex(anEvent);
+	  //	G4cout<<"Ciao "<<pvtx[0]<<G4endl;
 	}
 	it++;
       }
@@ -215,9 +238,9 @@ void ExN02PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   }
 
   
-  //MyEvent *TheEvent = MyEvent::GetInstance();
+  MyEvent *TheEvent = MyEvent::GetInstance();
   
-  // G4cout << "ExN02PrimaryGeneratorAction::GeneratePrimaries  Number of primaries in that event: "<< TheEvent->GetGenEvent()->getParticles()->size() << G4endl;
+  G4cout << "ExN02PrimaryGeneratorAction::GeneratePrimaries  Number of primaries in that event: "<< TheEvent->GetGenEvent()->getParticles()->size() << G4endl;
 
 }
 
