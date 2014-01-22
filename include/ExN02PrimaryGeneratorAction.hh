@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: ExN02PrimaryGeneratorAction.hh,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: ExN02PrimaryGeneratorAction.hh,v 1.2 2014/01/22 17:29:06 veni Exp $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -39,6 +39,7 @@ class ExN02DetectorConstruction;
 class G4ParticleGun;
 class G4Event;
 class MyEventGenerator;
+//class HistoManager;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
  
@@ -56,10 +57,10 @@ private:
   ExN02DetectorConstruction* myDetector;
   MyEventGenerator *evt;
 
+  //private:
+  //  G4double NewBeamEnergy;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-
-

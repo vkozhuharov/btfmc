@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: ExN02EventAction.hh,v 1.2 2014/01/22 17:27:54 veni Exp $
+// $Id: ExN02EventAction.hh,v 1.3 2014/01/22 17:34:55 veni Exp $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -70,7 +70,7 @@ class ExN02EventAction : public G4UserEventAction
   G4int    GetSeedCell();
   G4int    GetSeedRing();
   G4double GetEClus(G4int SeedCell);
-  G4double GetETrack(){return 0.};
+  G4double GetETrack(){return 0.;};
   G4double GetETrack(G4int SeedTrack);
   G4double GetCharge(G4double Energia);
   G4int GetNeig(G4int SeedCell);

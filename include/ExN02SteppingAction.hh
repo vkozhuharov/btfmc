@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: ExN02SteppingAction.hh,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: ExN02SteppingAction.hh,v 1.2 2014/01/22 17:29:54 veni Exp $
 // 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -44,12 +44,21 @@ class ExN02SteppingAction : public G4UserSteppingAction
 
   void UserSteppingAction(const G4Step*);
   double GetPhysProc()   {return ProcID;};
+  void   SetPhysProc(float value);
+
+  double GetPositronE()  {return BeamPartE;};
+  double GetPositronX()  {return VertexPos[0];};
+  double GetPositronY()  {return VertexPos[1];};
+  double GetPositronZ()  {return VertexPos[2];};
+
   double GetGammaEnergy(){return GammaE;};
   double SetGammaAngle(G4ThreeVector GammaDir,G4ThreeVector BeamDir);
   double GetGammaAngle(){return ThetaGamma;};
 
 private:
   double ProcID;
+  double PositronE;
+  double ElectronE;	
   double BeamPartE;
   double GammaE;
   double ThetaGamma;

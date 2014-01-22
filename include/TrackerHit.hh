@@ -24,7 +24,7 @@
 // ********************************************************************
 //
 //
-// $Id: TrackerHit.hh,v 1.1 2014/01/22 15:35:03 veni Exp $
+// $Id: TrackerHit.hh,v 1.2 2014/01/22 17:31:03 veni Exp $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -57,15 +57,17 @@ class TrackerHit : public G4VHit
 
   public:
   
-      void SetTrackID  (G4int track)      { trackID = track; };
+      void SetTrackID     (G4int track)      { trackID = track; };
       void SetTrackerNb   (G4int cry)        { TrackerNb = cry; };  
-      void SetEdep     (G4double de)      { edep = de; };
-      void SetPos      (G4ThreeVector xyz){ pos = xyz; };
-      
+      void SetEdep        (G4double de)      { edep = de; };
+      void SetPos         (G4ThreeVector xyz){ pos = xyz; };
+      void SetTrackCh     (G4double Charge)     { Ch = Charge; };	      
+
       G4int GetTrackID()    { return trackID; };
-      G4int GetTrackerNb()     { return TrackerNb; };
+      G4int GetTrackerNb()  { return TrackerNb; };
       G4double GetEdep()    { return edep; };      
       G4ThreeVector GetPos(){ return pos; };
+      G4double GetTrackCh()    { return Ch; };	
       
   private:
   
@@ -73,6 +75,7 @@ class TrackerHit : public G4VHit
       G4int         TrackerNb;
       G4double      edep;
       G4ThreeVector pos;
+      G4double      Ch;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
