@@ -1,0 +1,23 @@
+# $Id: run.mac,v 1.1 2014/01/22 15:35:03 veni Exp $
+#
+# Macro file for "exampleN02.cc"
+# 
+# can be run in batch, without graphic
+# or interactively: Idle> /control/execute run1.mac
+#
+/run/verbose 2
+/event/verbose 0
+# 
+# proton 3 GeV to the direction (0.,0.,1.)  (default kinematic)
+# 1 event with detailled printing
+#
+#/tracking/verbose 1
+#/run/beamOn 1
+# 
+# Positrons 550 MeV to the direction (0.,0.,1.)
+# 1000 events (no printing)
+#
+/gun/particle e+
+/gun/energy 550 MeV
+/tracking/verbose 0
+/run/beamOn 2000
